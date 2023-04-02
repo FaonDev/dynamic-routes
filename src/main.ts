@@ -1,4 +1,4 @@
-import Express, { Application } from 'express';
+import Express, { Application, Request, Response } from 'express';
 import { readdir } from 'fs';
 
 export default class {
@@ -8,11 +8,11 @@ export default class {
     @description Start a new local application.
     @param value Dynamic TCP port to run server.
     */
-   
+
     constructor(value?: number) {
         this.expressApp = Express();
         this.expressApp.use(Express.urlencoded({ extended: true }));
-        this.expressApp.listen(value ?? 80, () => console.log(`SERVER: Running on TCP ${value}`));
+        this.expressApp.listen(value ?? 80, () => console.log(`SERVER: Running on TCP ${value}.`));
     };
 
     /**
@@ -22,33 +22,28 @@ export default class {
 
     setDefault(value: string): void {
         import('../' + value).then((callback) => {
-            this.expressApp.get('/', (req: object, res: object) => callback.default(req, res));
+            this.expressApp.get('/', (req: Request, res: Response) => callback.default(req, res));
         });
     };
 
     /**
-    @description Set default GET routes folder.
+    @description Set standard GET/POST routes folder.
     @param value Dynamic folder directory.
     */
 
-    getRoutes(value: string): void {
-        readdir('./' + value, (foo, bar) => {
-            bar.map(foo => import('../' + value + '/' + foo).then((callback) => {
-                this.expressApp.get('/' + foo, (req: object, res: object) => callback.default(req, res));
-            })) && console.log(`GET: Successfully loaded ${bar.length} route(s).`);
-        });
-    };
-
-    /**
-    @description Set default POST routes folder.
-    @param value Dynamic folder directory.
-    */
-
-    postRoutes(value: string): void {
-        readdir('./' + value, (foo, bar) => {
-            bar.map(foo => import('../' + value + '/' + foo).then((callback) => {
-                this.expressApp.post('/' + foo, (req: object, res: object) => callback.default(req, res));
-            })) && console.log(`POST: Successfully loaded ${bar.length} route(s).`);
-        });
+    useFolder(value: string): void {
+        readdir('./' + value, (a, b) => b.map(c => {
+            if ((c).toLocaleLowerCase() === 'post') {
+                readdir('./' + value + '/' + c, (d, e) => {
+                    e.map(f => import('../' + value + '/' + c + '/' + e).then((callback) => {
+                        this.expressApp.post('/' + f, (req: Request, res: Response) => callback.default(req, res));
+                    })) && console.log(`POST: Successfully loaded ${e.length} route(s).`);
+                });
+            } else if ((c).toLocaleLowerCase() === 'get') readdir('./' + value + '/' + c, (d, e) => {
+                e.map(f => import('../' + value + '/' + c + '/' + e).then((callback) => {
+                    this.expressApp.get('/' + f, (req: Request, res: Response) => callback.default(req, res));
+                })) && console.log(`GET: Successfully loaded ${e.length} route(s).`);
+            });
+        }));
     };
 };

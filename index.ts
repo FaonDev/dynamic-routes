@@ -4,5 +4,4 @@ var App = new Local(8155);
 // -> TCP: 8155
 
 App.setDefault('./src/routes/get/home');
-App.postRoutes('./src/routes/post');
-App.getRoutes('./src/routes/get');
+App.useFolder('./src/routes');
