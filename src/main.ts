@@ -33,13 +33,13 @@ export default class {
 
     useFolder(value: string): void {
         readdir('./' + value, (a, b) => b.map(c => {
-            if ((c).toLocaleLowerCase() === 'post') {
+            if ((c).toLowerCase() === 'post') {
                 readdir('./' + value + '/' + c, (d, e) => {
                     e.map(f => import('../' + value + '/' + c + '/' + e).then((callback) => {
                         this.expressApp.post('/' + f, (req: Request, res: Response) => callback.default(req, res));
                     })) && console.log(`POST: Successfully loaded ${e.length} route(s).`);
                 });
-            } else if ((c).toLocaleLowerCase() === 'get') readdir('./' + value + '/' + c, (d, e) => {
+            } else if ((c).toLowerCase() === 'get') readdir('./' + value + '/' + c, (d, e) => {
                 e.map(f => import('../' + value + '/' + c + '/' + e).then((callback) => {
                     this.expressApp.get('/' + f, (req: Request, res: Response) => callback.default(req, res));
                 })) && console.log(`GET: Successfully loaded ${e.length} route(s).`);
